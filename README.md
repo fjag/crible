@@ -216,7 +216,7 @@ crible assess examples/scrna_clustering.md --no-review
 
 ## Contributing
 
-Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (security, performance, reproducibility), prompt refinement for non-bioinformatics domains, and test coverage improvements.
+Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (security, performance, reproducibility), prompt refinement, and test coverage improvements.
 
 ---
 
