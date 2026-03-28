@@ -8,7 +8,7 @@
 
 **Quality assessment tool for bioinformatics skill files**
 
-The rapid proliferation of AI-generated, and insufficiently reviewed human-generated, skills targeting bioinformatics creates a real quality risk. Many lack ground-truth validation, conflate describing an analysis with correctly executing one, and use domain language without the required scientific rigour. Overstated automation claims are largely unfounded, and the downstream concern is concrete: users without deep domain grounding may trust outputs that are computationally plausible but biologically unreliable.
+The rapid proliferation of AI-generated, and insufficiently reviewed human-generated, skill files targeting bioinformatics creates a real quality risk. Many lack ground-truth validation, conflate describing an analysis with correctly executing one, and use domain language without the required scientific rigour. Overstated automation claims are largely unfounded, and the downstream concern is concrete: users without deep domain grounding may trust outputs that are computationally plausible but biologically unreliable.
 
 **Crible is an experimental response to this problem.** It assesses bioinformatics skill files across ambiguity, execution flow, and domain constraint dimensions using a four-layer Claude-powered pipeline, surfacing likely issues for human review before deployment — all without executing any code.
 
