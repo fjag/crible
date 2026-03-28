@@ -108,7 +108,14 @@ crible setup
 
 ## Expected Costs
 
-Crible uses the Anthropic API, which charges per token. Typical costs per skill file assessment:
+Crible uses the Anthropic API, which charges per token. **Default model: Claude Sonnet 4.5** (`claude-sonnet-4-5-20250929`) - provides the best balance between analysis quality and cost.
+
+**Available models:**
+- `--model sonnet` (default): Claude Sonnet 4.5 - Balanced performance
+- `--model opus`: Claude Opus 4.5 - Highest quality, highest cost
+- `--model haiku`: Claude 3.5 Haiku - Fastest, lowest cost
+
+Typical costs per skill file assessment:
 
 | Skill Complexity | Model | Estimated Tokens | Approximate Cost* |
 |------------------|-------|------------------|-------------------|
