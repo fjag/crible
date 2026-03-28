@@ -156,8 +156,6 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 
 **Cost optimization:** Use `--model haiku` for batch processing (~50% savings), or `--skip-layer 2` to skip execution trace (~45% savings).
 
-**📖 See [COSTS.md](COSTS.md) for detailed pricing, model comparison, optimization strategies, and budgeting guidelines.**
-
 ---
 
 ## Known Limitations
@@ -172,20 +170,15 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 - 🧬 Prompts optimized for bioinformatics (may underperform on other domains)
 - 💰 Token costs accumulate with complex skill files
 
-**📖 See [LIMITATIONS.md](LIMITATIONS.md) for detailed explanations, mitigation strategies, and workarounds.**
-
 ---
 
 ## Documentation
 
 - **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - Detailed usage examples and workflows
 - **[OUTPUTS.md](OUTPUTS.md)** - Output format examples (annotated markdown and JSON)
-- **[COSTS.md](COSTS.md)** - Cost estimates, model comparison, and optimization strategies
-- **[LIMITATIONS.md](LIMITATIONS.md)** - Comprehensive limitations documentation
 - **[CI_CD.md](CI_CD.md)** - CI/CD integration guide (GitHub Actions, GitLab, Jenkins)
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture, design patterns, and data models
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development setup, testing, and prompt development
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and development process
 - **[IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md)** - Original implementation notes
 - **[PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md)** - Development challenges and lessons learned
 
@@ -227,8 +220,6 @@ crible assess examples/scrna_clustering.md --no-review
 
 Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (security, performance, reproducibility), prompt refinement for non-bioinformatics domains, and test coverage improvements.
 
-**📖 See [CONTRIBUTING.md](CONTRIBUTING.md) for development process, code style guidelines, testing requirements, and PR checklist.**
-
 ---
 
 ## Acknowledgements
@@ -261,7 +252,7 @@ https://github.com/fjag/crible
 
 Crible is an experimental research tool. Findings are suggestions for review, not definitive bugs. Always apply expert judgement and manual review — Crible assists but does not replace domain expertise.
 
-**Key limitations:** Layer 0 catalogs but doesn't validate dependencies. Layer 2 execution traces are predictions with confidence scores. LLM-based analysis has inherent uncertainty. See [LIMITATIONS.md](LIMITATIONS.md) for details.
+**Key limitations:** Layer 0 catalogs but doesn't validate dependencies. Layer 2 execution traces are predictions with confidence scores. LLM-based analysis has inherent uncertainty. 
 
 **MIT License** - provided as-is without warranty. Maintained on a best-effort basis.
 
