@@ -4,7 +4,7 @@ Crible produces reports in two formats: **annotated markdown** (default) and **J
 
 ## Annotated Markdown Format
 
-The default format embeds findings as inline annotations within your original skill file.
+The default format creates a report that includes a copy of your skill file with findings embedded as inline annotations.
 
 ```markdown
 # Crible Quality Assessment Report
