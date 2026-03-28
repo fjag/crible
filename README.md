@@ -1,5 +1,11 @@
 # Crible
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg)](https://github.com/fjag/crible)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Powered by Claude](https://img.shields.io/badge/Powered%20by-Claude%20API-blueviolet.svg)](https://www.anthropic.com/claude)
+[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-5C6BC0.svg)](https://claude.ai/code)
+
 **Quality assessment tool for bioinformatics skill files**
 
 Crible analyzes LLM instruction sets (skill files) used for bioinformatics tasks and produces structured quality reports. It runs a four-layer assessment pipeline using Claude to identify dependency issues, ambiguities, execution flow problems, and domain constraint violations — all without executing any code.
