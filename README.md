@@ -176,7 +176,6 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 
 - **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - Detailed usage examples and workflows
 - **[OUTPUTS.md](OUTPUTS.md)** - Output format examples (annotated markdown and JSON)
-- **[CI_CD.md](CI_CD.md)** - CI/CD integration guide (GitHub Actions, GitLab, Jenkins)
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture, design patterns, and data models
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development setup, testing, and prompt development
 - **[PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md)** - Development challenges and lessons learned
