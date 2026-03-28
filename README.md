@@ -8,15 +8,17 @@
 
 **Quality assessment tool for bioinformatics skill files**
 
-Crible analyzes LLM instruction sets (skill files) used for bioinformatics tasks and produces structured quality reports. It runs a four-layer assessment pipeline using Claude to identify dependency issues, ambiguities, execution flow problems, and domain constraint violations — all without executing any code.
+The rapid proliferation of AI-generated, and insufficiently reviewed human-generated, skills targeting bioinformatics creates a real quality risk. Many lack ground-truth validation, conflate describing an analysis with correctly executing one, and use authoritative domain language without the scientific constraints that make it meaningful. Overstated automation claims are largely unfounded, and the downstream concern is concrete: users without deep domain grounding may trust outputs that are computationally plausible but biologically unreliable.
 
-> **⚠️ EXPERIMENTAL TOOL:** Crible is an experimental research tool. Use findings as a starting point for manual review, not as definitive conclusions. Provided without warranty or support commitments. See full [disclaimer](#disclaimer) below.
+**Crible is an experimental response to this problem.** It assesses bioinformatics skill files across ambiguity, execution flow, and domain constraint dimensions using a four-layer Claude-powered pipeline, surfacing likely issues for human review before deployment — all without executing any code.
+
+> **⚠️ EXPERIMENTAL TOOL:** Crible is a research tool designed to assist — not replace — expert judgement. Use findings as a starting point for manual review, not as definitive conclusions. Provided without warranty or support commitments. See full [disclaimer](#disclaimer) below.
 
 ---
 
 ## What Does It Do?
 
-Crible performs **static quality analysis** on bioinformatics skill files without executing any code. Given a skill file (like a scRNA-seq clustering workflow), Crible:
+Crible performs **static quality analysis** on bioinformatics skill files. Given a skill file (like a scRNA-seq clustering workflow), Crible:
 
 1. **Extracts dependencies** - Catalogs all mentioned tools, packages, databases, and files
 2. **Identifies ambiguities** - Flags steps with multiple plausible interpretations (e.g., "normalize data" → which method?)
@@ -27,8 +29,6 @@ Crible performs **static quality analysis** on bioinformatics skill files withou
 - "Step 3 doesn't specify which normalization method (library size? SCTransform? TPM?)"
 - "Step 5 performs PCA but no normalization precedes it"
 - "Workflow assumes 10x Genomics data but presents as general scRNA-seq pipeline"
-
-**Use case:** Review skill files before deploying them, identify potential issues early, improve documentation quality.
 
 ---
 
