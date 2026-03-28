@@ -187,76 +187,49 @@ Crible uses the Anthropic API, which charges per token. **Default model: Claude 
 
 ## Documentation
 
-- **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - Detailed usage examples and workflows
-- **[OUTPUTS.md](OUTPUTS.md)** - Output format examples (annotated markdown and JSON)
-- **[LIMITATIONS.md](LIMITATIONS.md)** - Comprehensive limitations documentation
-- **[CI_CD.md](CI_CD.md)** - CI/CD integration guide (GitHub Actions, GitLab, Jenkins)
-- **[IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md)** - Technical architecture details
-- **[PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md)** - Development challenges and insights
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and development process
+- **[IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md)** - Original implementation notes
+- **[PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md)** - Development challenges and lessons learned
 
 ---
 
 ## Architecture
 
-### Layer Pipeline
+Crible uses a four-layer sequential assessment pipeline with selective context passing. Each layer produces detailed findings plus a condensed summary for downstream layers, reducing token costs by ~60-70%.
 
-Layers run sequentially with selective context passing:
+**Pipeline:** Layer 0 (dependencies) → Layer 1 (ambiguity) → Layer 2 (execution trace) → Layer 3 (domain constraints)
 
-1. **Layer 0** extracts dependencies (cataloging only - no validation in v1)
-2. **Layer 1** scores instruction ambiguity (independent)
-3. **Layer 2** simulates execution flow (uses Layer 1 summary for context)
-4. **Layer 3** checks domain constraints (depends on Layer 2's inferred data type)
+**Error handling:** Independent layers (0, 1, 2) fail independently. Dependent layer (3) skips if Layer 2 fails.
 
-Each layer produces:
-- **Detailed findings** for the final report
-- **Condensed summary** for downstream layers (reduces token costs by ~60-70%)
-
-### Error Handling
-
-- **Independent layers** (0, 1, 2): Fail independently without affecting others
-- **Dependent layers** (3): Skip if prerequisites fail, with clear error messages
-
-See [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md) for module structure and design details.
+**📖 See [ARCHITECTURE.md](ARCHITECTURE.md) for complete technical details, design patterns, and performance characteristics.**
 
 ---
 
 ## Development
 
-### Running Tests
-
 ```bash
-# Install dev dependencies
-pip install pytest
+# Setup
+pip install -e .
+pip install pytest black flake8
 
 # Run tests
 pytest tests/
+
+# Test on examples
+crible assess examples/scrna_clustering.md --no-review
 ```
 
-### Prompt Refinement
+**Prompt refinement:** Dismissed findings generate training signal for iterative prompt improvement, creating a self-improving system over time.
 
-Dismissed findings generate training signal for prompt improvement:
-
-```bash
-# Collect dismissed findings across reports
-find reports/ -name "*.json" -exec jq '.findings[] | select(.review_decision=="dismissed")' {} \;
-
-# Analyze patterns: which layers overfire? Which categories are false positives?
-# Refine prompts in crible/prompts/ based on patterns
-# Regression test: re-run on previous skills
-```
-
-This creates a self-improving system over time.
+**📖 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup, testing, debugging, adding layers, and prompt development workflows.**
 
 ---
 
 ## Contributing
 
-Contributions welcome! Areas for improvement:
-- Layer 0 validation with live registry APIs
-- Additional layers (security, performance, reproducibility)
-- Prompt refinement for non-bioinformatics domains
-- Test coverage
-- Documentation improvements
+Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (security, performance, reproducibility), prompt refinement for non-bioinformatics domains, and test coverage improvements.
+
+**📖 See [CONTRIBUTING.md](CONTRIBUTING.md) for development process, code style guidelines, testing requirements, and PR checklist.**
 
 ---
 
@@ -288,23 +261,11 @@ https://github.com/fjag/crible
 
 ## Disclaimer
 
-Crible is an experimental research tool intended to assist — not replace — expert judgement. Findings should be treated as a starting point for manual review, not as definitive conclusions.
+Crible is an experimental research tool. Findings are suggestions for review, not definitive bugs. Always apply expert judgement and manual review — Crible assists but does not replace domain expertise.
 
-**Important limitations:**
-- Accuracy is not guaranteed
-- Results may vary depending on skill file structure, complexity, and documentation quality
-- Layer 0 does not validate dependencies (cataloging only)
-- Layer 2 execution traces are best-effort predictions, not actual executions
-- LLM-based assessment has inherent uncertainty
+**Key limitations:** Layer 0 catalogs but doesn't validate dependencies. Layer 2 execution traces are predictions with confidence scores. LLM-based analysis has inherent uncertainty. See [LIMITATIONS.md](LIMITATIONS.md) for details.
 
-**Use responsibly:**
-- Do not rely solely on Crible findings for critical decisions
-- Always conduct manual expert review of flagged issues
-- Findings represent likely issues, not definitive bugs
-- Dismissed findings and confidence scores indicate uncertainty
-
-**No warranty:**
-The author assumes no responsibility for decisions made based on this tool's output. This project is maintained on a best-effort basis with no commitment to updates or user support.
+**MIT License** - provided as-is without warranty. Maintained on a best-effort basis.
 
 ---
 
