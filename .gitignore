@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Crible specific
+.crible/
+*.h5ad
+examples/example.md
+examples/example_crible_report.md
+examples/output/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+config
+secrets/
+*.key
+*.pem
+
+# Test outputs
+test_output/
+reports/
