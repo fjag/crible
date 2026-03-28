@@ -4,7 +4,7 @@
 [![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg)](https://github.com/fjag/crible)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Powered by Claude](https://img.shields.io/badge/Powered%20by-Claude%20API-blueviolet.svg)](https://www.anthropic.com/claude)
-[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-5C6BC0.svg)](https://claude.ai/code)
+
 
 **Quality assessment tool for bioinformatics skill files**
 
