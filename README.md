@@ -147,25 +147,16 @@ See [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md) for detailed examples.
 
 ## Expected Costs
 
-Crible uses the Anthropic API, which charges per token. **Default model: Claude Sonnet 4.5** (`claude-sonnet-4-5-20250929`) - provides the best balance between analysis quality and cost.
+Crible uses the Anthropic API (charges per token). **Default model: Claude Sonnet 4.5** - best balance between quality and cost.
 
-**Available models:**
-- `--model sonnet` (default): Claude Sonnet 4.5 - Balanced performance
-- `--model opus`: Claude Opus 4.5 - Highest quality, highest cost
-- `--model haiku`: Claude 3.5 Haiku - Fastest, lowest cost
+**Typical costs per skill:**
+- Simple (10-20 steps): $0.02 - $0.05
+- Medium (20-50 steps): $0.05 - $0.09
+- Complex (50+ steps): $0.09 - $0.18
 
-| Skill Complexity | Model | Estimated Tokens | Approximate Cost* |
-|------------------|-------|------------------|-------------------|
-| Simple (10-20 steps) | Sonnet | 8,000 - 15,000 | $0.02 - $0.05 |
-| Medium (20-50 steps) | Sonnet | 15,000 - 30,000 | $0.05 - $0.09 |
-| Complex (50+ steps) | Sonnet | 30,000 - 60,000 | $0.09 - $0.18 |
-| Complex (50+ steps) | Opus | 30,000 - 60,000 | $0.45 - $0.90 |
+**Cost optimization:** Use `--model haiku` for batch processing (~50% savings), or `--skip-layer 2` to skip execution trace (~45% savings).
 
-*Based on Anthropic API pricing as of March 2026. Actual costs vary based on skill length and complexity.
-
-**Cost optimization:**
-- Use `--model haiku` for batch processing (lower cost, slightly reduced quality)
-- Use `--skip-layer 2` to skip execution trace (highest token consumer)
+**📖 See [COSTS.md](COSTS.md) for detailed pricing, model comparison, optimization strategies, and budgeting guidelines.**
 
 ---
 
@@ -189,6 +180,7 @@ Crible uses the Anthropic API, which charges per token. **Default model: Claude 
 
 - **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - Detailed usage examples and workflows
 - **[OUTPUTS.md](OUTPUTS.md)** - Output format examples (annotated markdown and JSON)
+- **[COSTS.md](COSTS.md)** - Cost estimates, model comparison, and optimization strategies
 - **[LIMITATIONS.md](LIMITATIONS.md)** - Comprehensive limitations documentation
 - **[CI_CD.md](CI_CD.md)** - CI/CD integration guide (GitHub Actions, GitLab, Jenkins)
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture, design patterns, and data models
