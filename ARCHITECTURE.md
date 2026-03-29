@@ -142,10 +142,10 @@ Report Generation
 
 **Process:**
 - LLM checks for:
-  - Methodological mismatches (bulk methods on single-cell data)
-  - Reference mismatches (wrong genome assembly)
-  - Biological implausibility (PCR dedup on UMI data)
-  - Scope limitations (10x-specific code presented as general)
+  - Methodological mismatches (e.g., bulk methods on single-cell data)
+  - Reference mismatches (e.g.,wrong genome assembly)
+  - Biological implausibility (e.g., PCR dedup on UMI data)
+  - Scope limitations (e.g., 10x-specific code presented as general)
 - If Layer 2 had low confidence, findings prefixed "Tentative"
 
 **Output:**
