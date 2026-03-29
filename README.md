@@ -20,25 +20,25 @@ The rapid proliferation of AI-generated, and insufficiently reviewed human-gener
 
 Crible performs **static quality analysis** on bioinformatics skill files. Given a skill file (like a scRNA-seq clustering workflow), Crible:
 
-1. **Extracts dependencies** - Catalogs all mentioned tools, packages, databases, and files
-2. **Identifies ambiguities** - Flags steps with multiple plausible interpretations (e.g., "normalize data" → which method?)
-3. **Traces execution flow** - Predicts data transformations through the pipeline (e.g., raw counts → filtered → normalized → clustered)
-4. **Checks domain constraints** - Validates methodological appropriateness (e.g., bulk methods applied to single-cell data)
+1. **Extracts dependencies** - Catalogs all mentioned tools, packages, databases, and files.
+2. **Identifies ambiguities** - Flags steps with multiple plausible interpretations (e.g., "normalize data" → which method?).
+3. **Traces execution flow** - Predicts data transformations through the pipeline (e.g., raw counts → filtered → normalized → clustered).
+4. **Checks domain constraints** - Validates methodological appropriateness (e.g., bulk methods applied to single-cell data).
 
 **Example findings:**
-- "Step 3 doesn't specify which normalization method (library size? SCTransform? TPM?)"
-- "Step 5 performs PCA but no normalization precedes it"
-- "Workflow assumes 10x Genomics data but presents as general scRNA-seq pipeline"
+- "Step 3 doesn't specify which normalization method (library size? SCTransform? TPM?)".
+- "Step 5 performs PCA but no normalization precedes it".
+- "Workflow assumes 10x Genomics data but presents as 'general' scRNA-seq pipeline".
 
 ---
 
 ## Project Philosophy
 
-Crible is a **best-effort quality linter**, not a **definitive bug detector**. The value is in:
-- Surfacing likely issues for human review
-- Making uncertainty explicit (confidence scores, tentative findings)
-- Providing actionable recommendations
-- Preserving audit trail (dismissed findings with reasons)
+Crible is a **best-effort quality checker **, not a **definitive bug detector**. The value is in:
+- Surfacing likely issues for human review.
+- Making uncertainty explicit (confidence scores, tentative findings) to support decisions.
+- Providing actionable recommendations.
+- Preserving an audit trail.
 
 We prioritize **honesty about limitations** over false confidence.
 
@@ -47,18 +47,18 @@ We prioritize **honesty about limitations** over false confidence.
 ## Features
 
 - **Four-layer assessment pipeline:**
-  - Layer 0: Dependency extraction (cataloging only - no validation in v1)
-  - Layer 1: Instruction ambiguity scoring
-  - Layer 2: Simulated execution trace
-  - Layer 3: Domain constraint checking
+  - Layer 0: Dependency extraction (cataloging only - no validation in v1 yet).
+  - Layer 1: Instruction ambiguity scoring.
+  - Layer 2: Simulated execution trace.
+  - Layer 3: Domain constraint checking.
 
-- **Interactive review:** Review findings before final report generation with single-letter shortcuts (a/d/n/s)
+- **Interactive review:** Review findings before final report generation with single-letter shortcuts.
 
 - **Dual output formats:**
-  - Annotated markdown: Inline annotations within original skill file
-  - JSON: Structured output for CI/CD and batch analysis
+  - Annotated markdown: Annotations of critical issues or warnings for human user.
+  - JSON: Structured output for downstream uses, such as pipelines, CI/CD and batch analysis.
 
-- **Fail-forward with dependency awareness:** Layers handle failures gracefully and skip dependent layers when prerequisites fail
+- **Fail-forward with dependency awareness:** Layers handle failures and skip dependent layers when prerequisites fail.
 
 ---
 
@@ -117,7 +117,7 @@ crible assess skill.md --format json
 crible assess skill.md --model haiku --skip-layer 0
 ```
 
-**Output:** Reports are saved to files (not printed to terminal) for better readability. Default filename: `<skill_name>_crible_report.md` (or `.json` for JSON format).
+**Output:** Reports are saved to files (not just printed to terminal) for better readability. Default filename: `<skill_name>_crible_report.md` (or `.json` for JSON format).
 
 ### Command Options
 
@@ -136,10 +136,10 @@ Options:
 ### Interactive Review
 
 When reviewing findings, use single-letter shortcuts:
-- **a** (accept) - Keep this finding as-is
-- **d** (dismiss) - Mark as false positive (asks for reason)
-- **n** (annotate) - Add context note
-- **s** (skip_all) - Accept all remaining findings
+- **a** (accept) - Keep this finding as-is.
+- **d** (dismiss) - Mark as false positive (asks for reason).
+- **n** (annotate) - Add context note.
+- **s** (skip_all) - Accept all remaining findings.
 
 See [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md) for detailed examples.
 
@@ -149,7 +149,7 @@ See [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md) for detailed examples.
 
 Crible uses the Anthropic API (charges per token). **Default model: Claude Sonnet 4.5** - best balance between quality and cost.
 
-**Typical costs per skill:**
+**Estimated typical costs per skill file:**
 - Simple (10-20 steps): $0.02 - $0.05
 - Medium (20-50 steps): $0.05 - $0.09
 - Complex (50+ steps): $0.09 - $0.18
@@ -160,25 +160,25 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 
 ## Known Limitations
 
-> **⚠️ IMPORTANT:** Crible is a best-effort quality linter, not a definitive bug detector. All findings should be manually reviewed by domain experts.
+> **⚠️ IMPORTANT:** Crible is a best-effort quality auditor, not a definitive bug detector. All findings should be manually reviewed by domain experts.
 
 **Quick Summary:**
-- ❌ Layer 0 catalogs but does NOT validate dependencies (no live registry checks)
-- ⚠️ Layer 2 execution traces are predictions, not actual runs (confidence scores indicate uncertainty)
-- 🔍 LLM-based findings may include false positives (use interactive review to dismiss)
-- 🚫 Cannot check execution environment (RAM, installed software, file system)
-- 🧬 Prompts optimized for bioinformatics (may underperform on other domains)
-- 💰 Token costs accumulate with complex skill files
+- ❌ Layer 0 catalogs but does NOT validate dependencies (no live registry checks).
+- ⚠️ Layer 2 execution traces are predictions, not actual runs (confidence scores indicate uncertainty).
+- 🔍 LLM-based findings may include false positives (use interactive review to dismiss).
+- 🚫 Cannot check execution environment (RAM, installed software, file system).
+- 🧬 Prompts optimized for bioinformatics (may underperform on other domains).
+- 💰 Token costs accumulate with complex skill files.
 
 ---
 
 ## Documentation
 
-- **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - Detailed usage examples and workflows
-- **[OUTPUTS.md](OUTPUTS.md)** - Output format examples (annotated markdown and JSON)
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture, design patterns, and data models
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development setup, testing, and prompt development
-- **[PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md)** - Development challenges and lessons learned
+- **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - Detailed usage examples and workflows.
+- **[OUTPUTS.md](OUTPUTS.md)** - Output format examples (annotated markdown and JSON).
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture, design patterns, and data models.
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development setup, testing, and prompt development.
+- **[PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md)** - Development challenges and lessons learned so far.
 
 ---
 
@@ -194,7 +194,7 @@ Crible uses a four-layer sequential assessment pipeline with selective context p
 
 ---
 
-## Development
+## Test Development
 
 ```bash
 # Setup
@@ -208,7 +208,7 @@ pytest tests/
 crible assess examples/scrna_clustering.md --no-review
 ```
 
-**Prompt refinement:** Dismissed findings generate training signal for iterative prompt improvement, creating a self-improving system over time.
+**Prompt refinement:** Dismissed findings generate training signal for iterative prompt improvement, creating a "self-improving" system over time.
 
 **📖 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup, testing, debugging, adding layers, and prompt development workflows.**
 
@@ -216,13 +216,13 @@ crible assess examples/scrna_clustering.md --no-review
 
 ## Contributing
 
-Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (security, performance, reproducibility), prompt refinement, and test coverage improvements.
+Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (e.g., security, performance, reproducibility), prompt refinement, and test coverage improvements.
 
 ---
 
 ## Acknowledgements
 
-Crible was co-developed with **Claude Code**, Anthropic's agentic coding tool. The implementation plan, architecture, and code were created through interactive planning and development sessions with Claude Sonnet 4.5.
+Crible originated with Francisco Azuaje, who co-developed it alongside Claude Code, Anthropic's agentic coding tool, through interactive planning and implementation sessions with Claude Sonnet 4.5.
 
 For insights into the development process, challenges encountered, and lessons learned, see [PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md).
 
