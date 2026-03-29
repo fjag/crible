@@ -208,7 +208,7 @@ pytest tests/
 crible assess examples/scrna_clustering.md --no-review
 ```
 
-**Prompt refinement:** Dismissed findings generate training signal for iterative prompt improvement, creating a "self-improving" system over time.
+**Prompt refinement:** Dismissed findings are saved in JSON reports with user rationale, enabling developers to manually identify irrelevant or false positive findings and refine prompts accordingly.
 
 **📖 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup, testing, debugging, adding layers, and prompt development workflows.**
 
