@@ -222,7 +222,7 @@ Contributions welcome! Priority areas: Layer 0 validation with live registry API
 
 ## Acknowledgements
 
-Crible originated with Francisco Azuaje, who co-developed it alongside Claude Code, Anthropic's agentic coding tool, through interactive planning and implementation sessions with Claude Sonnet 4.5.
+Crible was conceived by Francisco Azuaje and developed with Claude Code, Anthropic's agentic coding tool. Planning and implementation were carried out through interactive sessions with Claude Sonnet 4.5.
 
 For insights into the development process, challenges encountered, and lessons learned, see [PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md).
 
