@@ -52,7 +52,7 @@ crible assess examples/scrna_clustering.md
    - **s** or **skip_all:** Accept all remaining findings
 4. Report is saved to `scrna_clustering_crible_report.md`
 
-## Example 2: JSON Output for CI/CD
+## Example 2: JSON Output for downstream processing, e.g., pipelines, CI/CD
 
 Generate JSON report without interactive review:
 
