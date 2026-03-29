@@ -13,7 +13,7 @@
 
 3. **Highest-Risk Component: Layer 2 Execution Trace** — Simulated execution tracing without code execution is ambitious and inherently uncertain. Mitigated by implementing confidence scoring (0.0-1.0) per traced step and dependency-aware error handling for downstream layers. Works well for linear workflows; struggles with complex branching.
 
-4. **XML Parsing Robustness** — LLM responses contained malformed XML (unescaped special characters, mismatched tags). Solved with dual approach: (1) XML cleaning function to escape special characters post-generation, (2) Enhanced prompts with explicit XML formatting requirements and mental validation instructions.
+4. **XML Parsing Robustness** — LLM responses contained malformed XML (unescaped special characters, mismatched tags). Solved with dual approach: (1) XML cleaning function to escape special characters post-generation, (2) Enhanced prompts with explicit XML formatting requirements and step-by-step verification instructions.
 
 5. **Variable Scope Bug** — Early implementation had imports inside try blocks but exception handlers referenced those imports, causing UnboundLocalError. Lesson: imports must be at module level, not conditional.
 
