@@ -50,7 +50,7 @@ pytest tests/test_xml_parser.py
 pytest -v tests/
 ```
 
-### Integration Tests
+### CLI Usage Examples
 
 ```bash
 # Test on example skill files
