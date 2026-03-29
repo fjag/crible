@@ -316,44 +316,6 @@ print(f"Tokens: {client.get_token_count()}")
 
 ---
 
-## Release Process
-
-### Version Bump
-
-1. Update version in `setup.py`:
-   ```python
-   version="0.2.0"
-   ```
-
-2. Update CHANGELOG (if exists)
-
-3. Tag release:
-   ```bash
-   git tag -a v0.2.0 -m "Release v0.2.0"
-   git push origin v0.2.0
-   ```
-
-### Testing Before Release
-
-```bash
-# Run full test suite
-pytest tests/
-
-# Test on multiple skill files
-for skill in examples/*.md; do
-    crible assess "$skill" --no-review
-done
-
-# Test all models
-crible assess examples/scrna_clustering.md --model sonnet --no-review
-crible assess examples/scrna_clustering.md --model haiku --no-review
-
-# Test output formats
-crible assess examples/scrna_clustering.md --format json --no-review
-```
-
----
-
 ## Prompt Refinement Loop
 
 ### Collecting Dismissed Findings
@@ -404,17 +366,14 @@ Documentation files:
 - `README.md` - Main documentation with summaries
 - `USAGE_EXAMPLE.md` - Detailed usage examples
 - `OUTPUTS.md` - Output format examples
-- `LIMITATIONS.md` - Comprehensive limitations
-- `CI_CD.md` - CI/CD integration guide
 - `ARCHITECTURE.md` - Technical architecture
 - `DEVELOPMENT.md` - This file
-- `CONTRIBUTING.md` - Contribution guidelines
+- `PROJECT_LEARNINGS.md` - Development lessons learned
 
 **When to update:**
 - New layer added → Update README features, ARCHITECTURE.md
 - New CLI option → Update README usage, USAGE_EXAMPLE.md
-- Bug fixed → Update LIMITATIONS.md if limitation removed
-- New integration pattern → Update CI_CD.md
+- Bug fixed → Update README Known Limitations section if limitation removed
 
 ### Building Example Outputs
 
@@ -449,15 +408,6 @@ def clean_xml_response(xml_string: str) -> str:
 1. Update layer's parse_response to use new category
 2. Add category description to OUTPUTS.md
 3. Test with skill that triggers the category
-
-### Adjust Cost Table
-
-Location: `README.md` - Expected Costs section
-
-Update when:
-- Anthropic changes pricing
-- Prompt optimization reduces token usage
-- New models added
 
 ---
 
@@ -494,5 +444,4 @@ pip install --force-reinstall -e .
 ## See Also
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Architecture details
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [PROJECT_LEARNINGS.md](PROJECT_LEARNINGS.md) - Development lessons learned
