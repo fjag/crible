@@ -34,12 +34,6 @@ Crible performs **static quality analysis** on bioinformatics skill files. Given
 
 ## Features
 
-- **Four-layer assessment pipeline:**
-  - Layer 0: Dependency extraction (cataloging only - no validation in v1 yet).
-  - Layer 1: Instruction ambiguity scoring.
-  - Layer 2: Simulated execution trace.
-  - Layer 3: Domain constraint checking.
-
 - **Interactive review:** Review findings before final report generation with single-letter shortcuts.
 
 - **Dual output formats:**
@@ -168,38 +162,6 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 
 ---
 
-## Architecture
-
-Crible runs a four-layer sequential assessment pipeline. Each layer produces detailed findings and a condensed summary passed to downstream layers to reduce token costs.
-
-**Pipeline:** Layer 0 (dependencies) → Layer 1 (ambiguity) → Layer 2 (execution trace) → Layer 3 (domain constraints).
-
-**Error handling:** Independent layers (0, 1, 2) fail independently. Dependent layer (3) skips if Layer 2 fails.
-
-**📖 See [ARCHITECTURE.md](ARCHITECTURE.md) for complete technical details, design patterns, and performance characteristics.**
-
----
-
-## Development Setup and Prompt Refinement
-
-```bash
-# Setup
-pip install -e .
-pip install pytest black flake8
-
-# Run tests
-pytest tests/
-
-# Test on examples
-crible assess examples/scrna_clustering.md --no-review
-```
-
-**Prompt refinement:** Dismissed findings are saved in JSON reports with user rationale, enabling developers to manually identify irrelevant or false positive findings and refine prompts accordingly.
-
-**📖 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup, testing, debugging, adding layers, and prompt development workflows.**
-
----
-
 ## Contributing
 
 Contributions welcome! Priority areas: Layer 0 validation with live registry APIs, additional analysis layers (e.g., security, performance, reproducibility), prompt refinement, and test coverage improvements.
@@ -229,16 +191,6 @@ Crible: Quality Assessment Tool for Bioinformatics Skill Files
 Version 0.1.0 (2026)
 https://github.com/fjag/crible
 ```
-
----
-
-## Disclaimer
-
-Crible is an experimental research tool. Findings are suggestions for review, not definitive bugs. Always apply expert judgement and manual review — Crible assists but does not replace domain expertise.
-
-**Key limitations:** Layer 0 catalogs but doesn't validate dependencies. Layer 2 execution traces are predictions with confidence scores. LLM-based analysis has inherent uncertainty. 
-
-**MIT License** - provided as-is without warranty. Maintained on a best-effort basis.
 
 ---
 
