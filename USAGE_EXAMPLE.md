@@ -1,27 +1,8 @@
 # Crible Usage Example
 
-This guide walks through a complete example of using Crible to assess a bioinformatics skill file.
+This guide walks through complete examples of using Crible to assess bioinformatics skill files.
 
-## Setup
-
-1. **Install Crible:**
-
-```bash
-cd crible
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -e .
-```
-
-2. **Configure API key:**
-
-```bash
-# Option 1: Environment variable
-export ANTHROPIC_API_KEY=your-api-key-here
-
-# Option 2: Interactive setup
-crible setup
-```
+> **Prerequisites:** Install Crible and configure your API key. See [Installation](README.md#installation) and [Setup](README.md#setup) in the README.
 
 ## Example 1: Basic Assessment
 
