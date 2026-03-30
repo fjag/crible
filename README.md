@@ -184,9 +184,9 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 
 ## Architecture
 
-Crible uses a four-layer sequential assessment pipeline with selective context passing. Each layer produces detailed findings plus a condensed summary for downstream layers, reducing token costs by ~60-70%.
+Crible runs a four-layer sequential assessment pipeline. Each layer produces detailed findings and a condensed summary passed to downstream layers to reduce token costs.
 
-**Pipeline:** Layer 0 (dependencies) → Layer 1 (ambiguity) → Layer 2 (execution trace) → Layer 3 (domain constraints)
+**Pipeline:** Layer 0 (dependencies) → Layer 1 (ambiguity) → Layer 2 (execution trace) → Layer 3 (domain constraints).
 
 **Error handling:** Independent layers (0, 1, 2) fail independently. Dependent layer (3) skips if Layer 2 fails.
 
