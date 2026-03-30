@@ -160,13 +160,11 @@ Crible uses the Anthropic API (charges per token). **Default model: Claude Sonne
 
 ## Known Limitations
 
-> **⚠️ IMPORTANT:** Crible is a best-effort quality auditor, not a definitive bug detector. All findings should be manually reviewed by domain experts.
-
 **Quick Summary:**
 - ❌ Layer 0 catalogs but does NOT validate dependencies (no live registry checks).
-- ⚠️ Layer 2 execution traces are predictions, not actual runs (confidence scores indicate uncertainty).
-- 🔍 LLM-based findings may include false positives (use interactive review to dismiss).
-- 🚫 Cannot check execution environment (RAM, installed software, file system).
+- ⚠️ Layer 2 execution traces are LLM-based predictions, not actual runs (confidence scores indicate uncertainty).
+- 🔍 LLM-based findings may include false positives (use interactive review to verify/dismiss).
+- 🚫 Cannot check execution environment (e.g., RAM, installed software, file system).
 - 🧬 Prompts optimized for bioinformatics (may underperform on other domains).
 - 💰 Token costs accumulate with complex skill files.
 
