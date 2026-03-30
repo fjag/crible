@@ -32,18 +32,6 @@ Crible performs **static quality analysis** on bioinformatics skill files. Given
 
 ---
 
-## Project Philosophy
-
-Crible is a **best-effort quality checker **, not a **definitive bug detector**. The value is in:
-- Surfacing likely issues for human review.
-- Making uncertainty explicit (confidence scores, tentative findings) to support decisions.
-- Providing actionable recommendations.
-- Preserving an audit trail.
-
-We prioritize **honesty about limitations** over false confidence.
-
----
-
 ## Features
 
 - **Four-layer assessment pipeline:**
