@@ -1,5 +1,6 @@
 # Crible
 
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/fjag/crible)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Status: Experimental](https://img.shields.io/badge/Status-Experimental-orange.svg)](https://github.com/fjag/crible)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -188,7 +189,7 @@ If you use Crible in research, please cite:
 
 ```
 Crible: Quality Assessment Tool for Bioinformatics Skill Files
-Version 0.1.0 (2026)
+Version 0.2.0 (2026)
 https://github.com/fjag/crible
 ```
 
