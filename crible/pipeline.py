@@ -1,6 +1,6 @@
 """Pipeline orchestrator for running assessment layers."""
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import time
 
 from crible.models import Report, Finding
@@ -62,6 +62,7 @@ class PipelineOrchestrator:
         findings = []
         layer_summaries = {}
         upstream_context = {}
+        structured_context: Dict[int, Dict[str, Any]] = {}
         failed_layers = set()
 
         for layer in self.layers:
@@ -98,6 +99,10 @@ class PipelineOrchestrator:
             if verbose:
                 print(f"[Layer {layer.layer_id}] Executing: {layer.layer_name}")
 
+            # Pass structured context to layers that support it
+            if hasattr(layer, 'set_structured_context'):
+                layer.set_structured_context(structured_context)
+
             result = layer.execute(skill_content, upstream_context)
 
             if result.success:
@@ -107,6 +112,10 @@ class PipelineOrchestrator:
                 findings.extend(result.findings)
                 layer_summaries[layer.layer_id] = result.summary
                 upstream_context[layer.layer_id] = result.summary
+
+                # Store structured data for downstream layers
+                if result.structured_data:
+                    structured_context[layer.layer_id] = result.structured_data
             else:
                 if verbose:
                     print(f"[Layer {layer.layer_id}] Failed: {result.error}")

@@ -35,6 +35,33 @@ class XMLParser:
     """Parser for XML-tagged LLM responses."""
 
     @staticmethod
+    def parse(xml_response: str) -> ET.Element:
+        """Parse XML response and return root element.
+
+        Cleans the XML (fixes common LLM issues) and wraps in a root element.
+
+        Args:
+            xml_response: Raw XML string from LLM
+
+        Returns:
+            ElementTree root element
+
+        Raises:
+            ParseError: If XML is malformed
+        """
+        try:
+            cleaned_xml = clean_xml_response(xml_response)
+            wrapped = f"<root>{cleaned_xml}</root>"
+            return ET.fromstring(wrapped)
+        except ET.ParseError as e:
+            snippet = xml_response[:500] if len(xml_response) > 500 else xml_response
+            raise ParseError(
+                f"Failed to parse XML: {e}\n"
+                f"Response snippet: {snippet}\n"
+                f"Tip: LLM may have used unescaped < > & characters. Try running again."
+            )
+
+    @staticmethod
     def parse_findings(
         xml_response: str,
         layer_id: int,
@@ -101,7 +128,12 @@ class XMLParser:
             return findings
 
         except ET.ParseError as e:
-            raise ParseError(f"Failed to parse XML: {e}")
+            snippet = xml_response[:500] if len(xml_response) > 500 else xml_response
+            raise ParseError(
+                f"Failed to parse XML: {e}\n"
+                f"Response snippet: {snippet}\n"
+                f"Tip: LLM may have used unescaped < > & characters. Try running again."
+            )
         except ValueError as e:
             raise ParseError(f"Invalid field value: {e}")
         except Exception as e:

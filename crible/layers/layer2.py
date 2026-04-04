@@ -1,10 +1,8 @@
 """Layer 2: Simulated Execution Trace."""
-import xml.etree.ElementTree as ET
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 from crible.layers.base import Layer
-from crible.models import Finding
-from crible.utils import ParseError, AnthropicClient
-from crible.utils.xml_parser import clean_xml_response
+from crible.models import Finding, LayerResult
+from crible.utils import ParseError, AnthropicClient, LLMClientError
 from crible.prompts.layer2_prompt import build_layer2_prompt
 
 
@@ -32,23 +30,21 @@ class Layer2(Layer):
         layer1_summary = upstream_context.get(1, "")
         return build_layer2_prompt(skill_content, layer1_summary)
 
-    def parse_response(self, response: str) -> Tuple[List[Finding], str]:
+    def parse_response(self, response: str) -> Tuple[List[Finding], str, Dict[str, Any]]:
         """Parse execution trace XML response.
 
         Args:
             response: XML response from LLM
 
         Returns:
-            Tuple of (findings list, summary for downstream layers)
+            Tuple of (findings list, summary string, structured data dict)
 
         Raises:
             ParseError: If response cannot be parsed
         """
         try:
-            # Clean the XML first (fix common LLM issues)
-            cleaned_xml = clean_xml_response(response)
-            wrapped = f"<root>{cleaned_xml}</root>"
-            root = ET.fromstring(wrapped)
+            # Parse the XML response
+            root = self.xml_parser.parse(response)
 
             findings = []
 
@@ -145,18 +141,55 @@ class Layer2(Layer):
             if avg_confidence < 0.5:
                 summary += "Note: Trace confidence is low - downstream findings may be tentative."
 
-            return findings, summary
+            # Return structured data for downstream layers
+            structured_data = {
+                "data_type": data_type,
+                "organism": organism,
+                "trace_confidence": avg_confidence,
+                "input_confidence": input_confidence,
+            }
 
-        except ET.ParseError as e:
-            # Show snippet of response to help debug
-            snippet = response[:500] if len(response) > 500 else response
-            raise ParseError(
-                f"Failed to parse execution trace XML: {e}\n"
-                f"Response snippet: {snippet}\n"
-                f"Tip: LLM may have used unescaped < > & characters. "
-                f"Try running again or use --skip-layer 2"
-            )
+            return findings, summary, structured_data
+
+        except ParseError:
+            raise  # Re-raise ParseError from xml_parser
         except ValueError as e:
             raise ParseError(f"Invalid numeric value in trace: {e}")
         except Exception as e:
             raise ParseError(f"Unexpected error parsing trace: {e}")
+
+    def execute(self, skill_content: str, upstream_context: Dict[int, str]) -> LayerResult:
+        """Execute Layer 2 with structured data for downstream layers.
+
+        Overrides base class to include structured_data in result.
+
+        Args:
+            skill_content: Content of the skill file
+            upstream_context: Summaries from previously executed layers
+
+        Returns:
+            LayerResult with findings, summary, and structured_data
+        """
+        try:
+            prompt = self.build_prompt(skill_content, upstream_context)
+            response = self.llm_client.generate(prompt)
+            findings, summary, structured_data = self.parse_response(response)
+
+            return LayerResult(
+                success=True,
+                findings=findings,
+                summary=summary,
+                structured_data=structured_data,
+            )
+
+        except (ParseError, LLMClientError) as e:
+            return LayerResult(
+                success=False,
+                error=str(e),
+            )
+
+        except Exception as e:
+            return LayerResult(
+                success=False,
+                error=f"Unexpected error: {type(e).__name__}: {e}",
+            )

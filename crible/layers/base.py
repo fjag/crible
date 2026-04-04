@@ -1,5 +1,6 @@
 """Base class for assessment layers."""
 from abc import ABC, abstractmethod
+import xml.etree.ElementTree as ET
 from typing import List, Dict, Tuple
 from crible.models import Finding, LayerResult
 from crible.utils import AnthropicClient, XMLParser, ParseError, LLMClientError
@@ -119,3 +120,21 @@ class Layer(ABC):
                 formatted.append(f"Layer {layer_id} summary: {upstream_context[layer_id]}")
 
         return "\n".join(formatted) if formatted else ""
+
+    def _handle_parse_error(self, error: Exception, response: str) -> ParseError:
+        """Create a standardized ParseError with context.
+
+        Args:
+            error: The original exception (typically ET.ParseError)
+            response: The raw response that failed to parse
+
+        Returns:
+            ParseError with helpful context for debugging
+        """
+        snippet = response[:500] if len(response) > 500 else response
+        return ParseError(
+            f"Failed to parse {self.layer_name} XML: {error}\n"
+            f"Response snippet: {snippet}\n"
+            f"Tip: LLM may have used unescaped < > & characters. "
+            f"Try running again or use --skip-layer {self.layer_id}"
+        )

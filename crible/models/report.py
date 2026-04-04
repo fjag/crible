@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Any
 from .finding import Finding
+from crible.constants import Severity, ReviewDecision
 
 
 @dataclass
@@ -28,7 +29,7 @@ class Report:
         Returns:
             Dict with keys "critical", "warning", "info", each containing a list of findings
         """
-        grouped = {"critical": [], "warning": [], "info": []}
+        grouped = {s: [] for s in Severity.ALL}
         for finding in self.findings:
             if finding.severity in grouped:
                 grouped[finding.severity].append(finding)
@@ -57,17 +58,17 @@ class Report:
         by_layer = self.findings_by_layer()
 
         review_stats = {
-            "accepted": sum(1 for f in self.findings if f.review_decision == "accepted"),
-            "dismissed": sum(1 for f in self.findings if f.review_decision == "dismissed"),
-            "annotated": sum(1 for f in self.findings if f.review_decision == "annotated"),
+            ReviewDecision.ACCEPTED: sum(1 for f in self.findings if f.review_decision == ReviewDecision.ACCEPTED),
+            ReviewDecision.DISMISSED: sum(1 for f in self.findings if f.review_decision == ReviewDecision.DISMISSED),
+            ReviewDecision.ANNOTATED: sum(1 for f in self.findings if f.review_decision == ReviewDecision.ANNOTATED),
         }
 
         return {
             "total_findings": len(self.findings),
             "by_severity": {
-                "critical": len(by_severity["critical"]),
-                "warning": len(by_severity["warning"]),
-                "info": len(by_severity["info"]),
+                Severity.CRITICAL: len(by_severity[Severity.CRITICAL]),
+                Severity.WARNING: len(by_severity[Severity.WARNING]),
+                Severity.INFO: len(by_severity[Severity.INFO]),
             },
             "by_layer": {str(layer_id): len(findings) for layer_id, findings in by_layer.items()},
             "reviewed": any(f.review_decision is not None for f in self.findings),

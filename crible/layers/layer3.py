@@ -1,10 +1,9 @@
 """Layer 3: Domain Constraint Checking."""
-import xml.etree.ElementTree as ET
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any, Optional
 from crible.layers.base import Layer
 from crible.models import Finding
-from crible.utils import AnthropicClient, ParseError
-from crible.utils.xml_parser import clean_xml_response
+from crible.utils import AnthropicClient, ParseError, count_severities
+from crible.constants import Severity
 from crible.prompts.layer3_prompt import build_layer3_prompt
 
 
@@ -17,6 +16,15 @@ class Layer3(Layer):
 
     def __init__(self, llm_client: AnthropicClient):
         super().__init__(llm_client, layer_id=3, layer_name="Domain Constraints")
+        self._structured_context: Dict[int, Dict[str, Any]] = {}
+
+    def set_structured_context(self, structured_context: Dict[int, Dict[str, Any]]) -> None:
+        """Set structured context from upstream layers.
+
+        Args:
+            structured_context: Dict mapping layer IDs to their structured data
+        """
+        self._structured_context = structured_context
 
     def build_prompt(self, skill_content: str, upstream_context: Dict[int, str]) -> str:
         """Build Layer 3 prompt.
@@ -28,31 +36,54 @@ class Layer3(Layer):
         Returns:
             Complete prompt string
         """
-        # Extract data type, organism, and trace confidence from Layer 2 summary
-        layer2_summary = upstream_context.get(2, "")
+        # Try to get data from structured context first (preferred)
+        layer2_data = self._structured_context.get(2, {})
 
+        if layer2_data:
+            # Use structured data directly - no parsing needed
+            data_type = layer2_data.get("data_type", "unknown")
+            organism = layer2_data.get("organism", "unknown")
+            trace_confidence = layer2_data.get("trace_confidence", 0.0)
+        else:
+            # Fallback: parse from summary string (legacy support)
+            data_type, organism, trace_confidence = self._parse_layer2_summary(
+                upstream_context.get(2, "")
+            )
+
+        return build_layer3_prompt(skill_content, data_type, organism, trace_confidence)
+
+    def _parse_layer2_summary(self, summary: str) -> Tuple[str, str, float]:
+        """Parse Layer 2 summary string to extract context data.
+
+        This is a fallback for when structured_data is not available.
+
+        Args:
+            summary: Layer 2 summary string
+
+        Returns:
+            Tuple of (data_type, organism, trace_confidence)
+        """
         data_type = "unknown"
         organism = "unknown"
         trace_confidence = 0.0
 
-        if layer2_summary:
+        if summary:
             # Parse summary string to extract values
             # Format: "Inferred data type: X (confidence: Y). Organism: Z. Traced N steps..."
-            parts = layer2_summary.split(". ")
+            parts = summary.split(". ")
             for part in parts:
                 if "Inferred data type:" in part:
                     data_type = part.split("Inferred data type:")[1].strip().split(" (")[0]
                 elif "Organism:" in part:
                     organism = part.split("Organism:")[1].strip()
                 elif "average confidence" in part:
-                    # Extract confidence value
                     try:
                         conf_str = part.split("average confidence")[1].strip().split()[0]
                         trace_confidence = float(conf_str)
                     except (IndexError, ValueError):
                         pass
 
-        return build_layer3_prompt(skill_content, data_type, organism, trace_confidence)
+        return data_type, organism, trace_confidence
 
     def parse_response(self, response: str) -> Tuple[List[Finding], str]:
         """Parse domain violation findings from XML response.
@@ -76,10 +107,7 @@ class Layer3(Layer):
             )
 
             # Enhance findings with explanation field if present
-            # Clean the XML first (fix common LLM issues)
-            cleaned_xml = clean_xml_response(response)
-            wrapped = f"<root>{cleaned_xml}</root>"
-            root = ET.fromstring(wrapped)
+            root = self.xml_parser.parse(response)
 
             violation_elements = root.findall('.//violation')
             for i, elem in enumerate(violation_elements):
@@ -93,15 +121,13 @@ class Layer3(Layer):
             if not findings:
                 summary = "No domain constraint violations found."
             else:
-                severity_counts = {"critical": 0, "warning": 0, "info": 0}
-                for finding in findings:
-                    severity_counts[finding.severity] = severity_counts.get(finding.severity, 0) + 1
+                severity_counts = count_severities(findings)
 
                 summary = (
                     f"Found {len(findings)} domain constraint issues: "
-                    f"{severity_counts['critical']} critical, "
-                    f"{severity_counts['warning']} warnings, "
-                    f"{severity_counts['info']} info. "
+                    f"{severity_counts[Severity.CRITICAL]} critical, "
+                    f"{severity_counts[Severity.WARNING]} warnings, "
+                    f"{severity_counts[Severity.INFO]} info. "
                 )
 
                 # List top categories
@@ -114,14 +140,7 @@ class Layer3(Layer):
 
             return findings, summary
 
-        except ET.ParseError as e:
-            # Show snippet of response to help debug
-            snippet = response[:500] if len(response) > 500 else response
-            raise ParseError(
-                f"Failed to parse domain violations XML: {e}\n"
-                f"Response snippet: {snippet}\n"
-                f"Tip: LLM may have used unescaped < > & characters. "
-                f"Try running again or use --skip-layer 3"
-            )
+        except ParseError:
+            raise  # Re-raise ParseError from xml_parser
         except Exception as e:
             raise ParseError(f"Unexpected error parsing domain violations: {e}")

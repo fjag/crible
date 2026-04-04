@@ -12,6 +12,7 @@ from crible.layers.layer3 import Layer3
 from crible.pipeline import PipelineOrchestrator
 from crible.review_interface import ReviewInterface
 from crible.output import JSONRenderer, AnnotatedMarkdownRenderer
+from crible.constants import Severity
 
 
 def get_api_key() -> str:
@@ -169,16 +170,15 @@ def assess(skill_file, format, output, no_review, skip_layer, model, verbose):
         # Show quick summary
         summary = report.summary_stats()
         click.echo(f"\nFindings: {summary['total_findings']} total ")
-        click.echo(f"  • Critical: {summary['by_severity']['critical']}")
-        click.echo(f"  • Warnings: {summary['by_severity']['warning']}")
-        click.echo(f"  • Info: {summary['by_severity']['info']}")
+        click.echo(f"  • Critical: {summary['by_severity'][Severity.CRITICAL]}")
+        click.echo(f"  • Warnings: {summary['by_severity'][Severity.WARNING]}")
+        click.echo(f"  • Info: {summary['by_severity'][Severity.INFO]}")
         click.echo(f"\nOpen the report file to view detailed findings.")
 
         # Exit with error code if critical findings
-        summary = report.summary_stats()
-        if summary['by_severity']['critical'] > 0:
+        if summary['by_severity'][Severity.CRITICAL] > 0:
             if verbose:
-                click.echo(f"\nWarning: {summary['by_severity']['critical']} critical findings detected")
+                click.echo(f"\nWarning: {summary['by_severity'][Severity.CRITICAL]} critical findings detected")
             sys.exit(1)
 
     except Exception as e:
@@ -188,7 +188,7 @@ def assess(skill_file, format, output, no_review, skip_layer, model, verbose):
 @cli.command()
 def version():
     """Show Crible version."""
-    click.echo("Crible v0.1.0")
+    click.echo("Crible v0.2.0")
 
 
 @cli.command()

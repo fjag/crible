@@ -1,9 +1,9 @@
 """Layer 1: Instruction Ambiguity Scoring."""
-import xml.etree.ElementTree as ET
 from typing import List, Dict, Tuple
 from crible.layers.base import Layer
 from crible.models import Finding
-from crible.utils import AnthropicClient, ParseError
+from crible.utils import AnthropicClient, ParseError, count_severities
+from crible.constants import Severity
 from crible.prompts.layer1_prompt import build_layer1_prompt
 
 
@@ -14,9 +14,9 @@ class Layer1(Layer):
     """
 
     AMBIGUITY_TO_SEVERITY = {
-        "HIGH": "critical",
-        "MEDIUM": "warning",
-        "LOW": "info",
+        "HIGH": Severity.CRITICAL,
+        "MEDIUM": Severity.WARNING,
+        "LOW": Severity.INFO,
     }
 
     def __init__(self, llm_client: AnthropicClient):
@@ -57,8 +57,7 @@ class Layer1(Layer):
 
             # Map ambiguity_score to severity if present in response
             # (XMLParser gives us default severity, but we can override based on ambiguity_score)
-            wrapped = f"<root>{response}</root>"
-            root = ET.fromstring(wrapped)
+            root = self.xml_parser.parse(response)
 
             finding_elements = root.findall('.//finding')
             for i, elem in enumerate(finding_elements):
@@ -82,19 +81,17 @@ class Layer1(Layer):
                     findings[i].recommendation = resolution if resolution else findings[i].recommendation
 
             # Generate summary
-            severity_counts = {"critical": 0, "warning": 0, "info": 0}
-            for finding in findings:
-                severity_counts[finding.severity] = severity_counts.get(finding.severity, 0) + 1
+            severity_counts = count_severities(findings)
 
             high_ambiguity_locations = [
-                f.location for f in findings if f.severity == "critical"
+                f.location for f in findings if f.severity == Severity.CRITICAL
             ]
 
             summary = (
                 f"Identified {len(findings)} ambiguous steps: "
-                f"{severity_counts['critical']} high-ambiguity, "
-                f"{severity_counts['warning']} medium-ambiguity, "
-                f"{severity_counts['info']} low-ambiguity. "
+                f"{severity_counts[Severity.CRITICAL]} high-ambiguity, "
+                f"{severity_counts[Severity.WARNING]} medium-ambiguity, "
+                f"{severity_counts[Severity.INFO]} low-ambiguity. "
             )
 
             if high_ambiguity_locations:
@@ -102,14 +99,7 @@ class Layer1(Layer):
 
             return findings, summary
 
-        except ET.ParseError as e:
-            # Show snippet of response to help debug
-            snippet = response[:500] if len(response) > 500 else response
-            raise ParseError(
-                f"Failed to parse ambiguity findings XML: {e}\n"
-                f"Response snippet: {snippet}\n"
-                f"Tip: LLM may have used unescaped < > & characters. "
-                f"Try running again or use --skip-layer 1"
-            )
+        except ParseError:
+            raise  # Re-raise ParseError from xml_parser
         except Exception as e:
             raise ParseError(f"Unexpected error parsing ambiguity findings: {e}")

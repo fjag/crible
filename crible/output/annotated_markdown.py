@@ -2,6 +2,7 @@
 import re
 from typing import List, Dict
 from crible.models import Report, Finding
+from crible.constants import Severity, ReviewDecision, SEVERITY_EMOJI, REVIEW_DECISION_EMOJI
 
 
 class AnnotatedMarkdownRenderer:
@@ -9,12 +10,6 @@ class AnnotatedMarkdownRenderer:
 
     Injects findings as inline annotations within the original skill file.
     """
-
-    SEVERITY_EMOJI = {
-        "critical": "🔴",
-        "warning": "⚠️",
-        "info": "ℹ️",
-    }
 
     def __init__(self):
         pass
@@ -38,129 +33,194 @@ class AnnotatedMarkdownRenderer:
         # Build annotated output
         output_lines = []
 
-        # Add header
-        output_lines.append("# Crible Quality Assessment Report\n")
-        output_lines.append(f"**Skill File:** {report.skill_file_path}  ")
-        output_lines.append(f"**Assessment Date:** {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}  ")
-        output_lines.append(f"**Model:** {report.execution_metadata.get('model', 'unknown')}  ")
+        # Render each section
+        output_lines.extend(self._render_header(report))
+        output_lines.extend(self._render_annotated_content(sections, findings_by_location))
+        output_lines.extend(self._render_detailed_findings(report))
+        output_lines.extend(self._render_summary(report))
+
+        return "\n".join(output_lines)
+
+    def _render_header(self, report: Report) -> List[str]:
+        """Render report header with metadata.
+
+        Args:
+            report: The assessment report
+
+        Returns:
+            List of header lines
+        """
+        lines = []
+        lines.append("# Crible Quality Assessment Report\n")
+        lines.append(f"**Skill File:** {report.skill_file_path}  ")
+        lines.append(f"**Assessment Date:** {report.timestamp.strftime('%Y-%m-%d %H:%M:%S')}  ")
+        lines.append(f"**Model:** {report.execution_metadata.get('model', 'unknown')}  ")
 
         summary = report.summary_stats()
-        output_lines.append(f"**Total Findings:** {summary['total_findings']} ")
-        output_lines.append(f"({summary['by_severity']['critical']} critical, ")
-        output_lines.append(f"{summary['by_severity']['warning']} warnings, ")
-        output_lines.append(f"{summary['by_severity']['info']} info)\n")
-        output_lines.append("---\n")
+        lines.append(f"**Total Findings:** {summary['total_findings']} ")
+        lines.append(f"({summary['by_severity'][Severity.CRITICAL]} critical, ")
+        lines.append(f"{summary['by_severity'][Severity.WARNING]} warnings, ")
+        lines.append(f"{summary['by_severity'][Severity.INFO]} info)\n")
+        lines.append("---\n")
 
-        # Add original content with annotations
-        output_lines.append("## Original Skill File with Annotations\n")
+        return lines
 
-        for i, section in enumerate(sections):
+    def _render_annotated_content(
+        self,
+        sections: List[Dict],
+        findings_by_location: Dict[str, List[Finding]]
+    ) -> List[str]:
+        """Render original content with inline annotations.
+
+        Args:
+            sections: Parsed skill content sections
+            findings_by_location: Findings grouped by location
+
+        Returns:
+            List of annotated content lines
+        """
+        lines = []
+        lines.append("## Original Skill File with Annotations\n")
+
+        for section in sections:
             # Add section content
-            output_lines.append(section['content'])
+            lines.append(section['content'])
 
             # Add findings for this section
             section_id = section['id']
             if section_id in findings_by_location:
-                output_lines.append("")  # Blank line before annotations
+                lines.append("")  # Blank line before annotations
                 for finding in findings_by_location[section_id]:
                     annotation = self._format_annotation(finding)
-                    output_lines.append(annotation)
-                output_lines.append("")  # Blank line after annotations
+                    lines.append(annotation)
+                lines.append("")  # Blank line after annotations
 
         # Add findings that couldn't be mapped to specific locations
         unmapped = findings_by_location.get("overall", []) + findings_by_location.get("unknown", [])
         if unmapped:
-            output_lines.append("\n---\n")
-            output_lines.append("## General Findings\n")
+            lines.append("\n---\n")
+            lines.append("## General Findings\n")
             for finding in unmapped:
                 annotation = self._format_annotation(finding)
-                output_lines.append(annotation)
-                output_lines.append("")
+                lines.append(annotation)
+                lines.append("")
 
-        # Add detailed findings section
-        output_lines.append("\n---\n")
-        output_lines.append("## All Findings (Detailed)\n")
-        output_lines.append("\nComplete list of all findings with review decisions:\n")
+        return lines
+
+    def _render_detailed_findings(self, report: Report) -> List[str]:
+        """Render detailed findings section.
+
+        Args:
+            report: The assessment report
+
+        Returns:
+            List of detailed findings lines
+        """
+        lines = []
+        lines.append("\n---\n")
+        lines.append("## All Findings (Detailed)\n")
+        lines.append("\nComplete list of all findings with review decisions:\n")
 
         by_severity = report.findings_by_severity()
-        for severity in ["critical", "warning", "info"]:
+        for severity in Severity.ALL:
             severity_findings = by_severity[severity]
             if not severity_findings:
                 continue
 
-            emoji = self.SEVERITY_EMOJI[severity]
-            output_lines.append(f"\n### {emoji} {severity.upper()} ({len(severity_findings)} findings)\n")
+            emoji = SEVERITY_EMOJI[severity]
+            lines.append(f"\n### {emoji} {severity.upper()} ({len(severity_findings)} findings)\n")
 
             for i, finding in enumerate(severity_findings, 1):
-                output_lines.append(f"\n#### {i}. {finding.category.replace('_', ' ').title()}")
-                output_lines.append(f"\n- **Layer:** {finding.layer_id} - {finding.layer_name}")
-                output_lines.append(f"- **Location:** {finding.location}")
-                output_lines.append(f"- **Issue:** {finding.description}")
-                output_lines.append(f"- **Recommendation:** {finding.recommendation}")
+                lines.extend(self._render_finding_detail(finding, i))
 
-                if finding.confidence is not None:
-                    output_lines.append(f"- **Confidence:** {finding.confidence:.2f}")
+        return lines
 
-                # Add review decision
-                if finding.review_decision:
-                    decision_emoji = {
-                        "accepted": "✅",
-                        "dismissed": "❌",
-                        "annotated": "📝"
-                    }.get(finding.review_decision, "•")
-                    output_lines.append(f"- **Review Decision:** {decision_emoji} {finding.review_decision.title()}")
+    def _render_finding_detail(self, finding: Finding, index: int) -> List[str]:
+        """Render a single finding in detail.
 
-                    if finding.review_note:
-                        output_lines.append(f"- **Review Note:** {finding.review_note}")
-                else:
-                    output_lines.append(f"- **Review Decision:** Not reviewed")
+        Args:
+            finding: The finding to render
+            index: The finding's index in its severity group
 
-                output_lines.append("")  # Blank line between findings
+        Returns:
+            List of finding detail lines
+        """
+        lines = []
+        lines.append(f"\n#### {index}. {finding.category.replace('_', ' ').title()}")
+        lines.append(f"\n- **Layer:** {finding.layer_id} - {finding.layer_name}")
+        lines.append(f"- **Location:** {finding.location}")
+        lines.append(f"- **Issue:** {finding.description}")
+        lines.append(f"- **Recommendation:** {finding.recommendation}")
 
-        # Add summary section
-        output_lines.append("\n---\n")
-        output_lines.append("## Assessment Summary\n")
+        if finding.confidence is not None:
+            lines.append(f"- **Confidence:** {finding.confidence:.2f}")
+
+        # Add review decision
+        if finding.review_decision:
+            decision_emoji = REVIEW_DECISION_EMOJI.get(finding.review_decision, "•")
+            lines.append(f"- **Review Decision:** {decision_emoji} {finding.review_decision.title()}")
+
+            if finding.review_note:
+                lines.append(f"- **Review Note:** {finding.review_note}")
+        else:
+            lines.append(f"- **Review Decision:** Not reviewed")
+
+        lines.append("")  # Blank line between findings
+        return lines
+
+    def _render_summary(self, report: Report) -> List[str]:
+        """Render assessment summary section.
+
+        Args:
+            report: The assessment report
+
+        Returns:
+            List of summary lines
+        """
+        lines = []
+        lines.append("\n---\n")
+        lines.append("## Assessment Summary\n")
 
         # Findings by layer
         by_layer = report.findings_by_layer()
-        output_lines.append("### Findings by Layer\n")
+        lines.append("### Findings by Layer\n")
         for layer_id in sorted(by_layer.keys()):
             layer_findings = by_layer[layer_id]
             layer_name = layer_findings[0].layer_name if layer_findings else f"Layer {layer_id}"
-            output_lines.append(f"**Layer {layer_id} ({layer_name}):** {len(layer_findings)} findings\n")
+            lines.append(f"**Layer {layer_id} ({layer_name}):** {len(layer_findings)} findings\n")
 
         # Findings by severity
-        output_lines.append("\n### Findings by Severity\n")
+        lines.append("\n### Findings by Severity\n")
         by_severity_count = report.findings_by_severity()
-        for severity in ["critical", "warning", "info"]:
-            emoji = self.SEVERITY_EMOJI[severity]
+        for severity in Severity.ALL:
+            emoji = SEVERITY_EMOJI[severity]
             count = len(by_severity_count[severity])
-            output_lines.append(f"{emoji} **{severity.upper()}:** {count}\n")
+            lines.append(f"{emoji} **{severity.upper()}:** {count}\n")
 
         # Review statistics
         if any(f.review_decision for f in report.findings):
-            output_lines.append("\n### Review Statistics\n")
-            accepted = sum(1 for f in report.findings if f.review_decision == "accepted")
-            dismissed = sum(1 for f in report.findings if f.review_decision == "dismissed")
-            annotated = sum(1 for f in report.findings if f.review_decision == "annotated")
+            lines.append("\n### Review Statistics\n")
+            accepted = sum(1 for f in report.findings if f.review_decision == ReviewDecision.ACCEPTED)
+            dismissed = sum(1 for f in report.findings if f.review_decision == ReviewDecision.DISMISSED)
+            annotated = sum(1 for f in report.findings if f.review_decision == ReviewDecision.ANNOTATED)
             not_reviewed = sum(1 for f in report.findings if not f.review_decision)
 
-            output_lines.append(f"- ✅ **Accepted:** {accepted}\n")
-            output_lines.append(f"- ❌ **Dismissed:** {dismissed}\n")
-            output_lines.append(f"- 📝 **Annotated:** {annotated}\n")
+            lines.append(f"- ✅ **Accepted:** {accepted}\n")
+            lines.append(f"- ❌ **Dismissed:** {dismissed}\n")
+            lines.append(f"- 📝 **Annotated:** {annotated}\n")
             if not_reviewed > 0:
-                output_lines.append(f"- ⚪ **Not Reviewed:** {not_reviewed}\n")
+                lines.append(f"- ⚪ **Not Reviewed:** {not_reviewed}\n")
 
         # Metadata
-        output_lines.append("\n### Execution Metadata\n")
-        output_lines.append(f"- **Total Tokens:** {report.execution_metadata.get('total_tokens', 'N/A')}\n")
-        output_lines.append(f"- **Duration:** {report.execution_metadata.get('duration_seconds', 0):.1f}s\n")
+        lines.append("\n### Execution Metadata\n")
+        lines.append(f"- **Total Tokens:** {report.execution_metadata.get('total_tokens', 'N/A')}\n")
+        lines.append(f"- **Duration:** {report.execution_metadata.get('duration_seconds', 0):.1f}s\n")
 
         failed = report.execution_metadata.get('failed_layers', [])
         if failed:
-            output_lines.append(f"- **Failed Layers:** {', '.join(map(str, failed))}\n")
+            lines.append(f"- **Failed Layers:** {', '.join(map(str, failed))}\n")
 
-        return "\n".join(output_lines)
+        return lines
 
     def save(self, report: Report, skill_content: str, output_path: str):
         """Save annotated markdown to file.
@@ -244,7 +304,7 @@ class AnnotatedMarkdownRenderer:
             grouped[location].append(finding)
 
         # Sort each group by severity
-        severity_order = {"critical": 0, "warning": 1, "info": 2}
+        severity_order = {Severity.CRITICAL: 0, Severity.WARNING: 1, Severity.INFO: 2}
         for location in grouped:
             grouped[location].sort(key=lambda f: severity_order.get(f.severity, 3))
 
@@ -259,7 +319,7 @@ class AnnotatedMarkdownRenderer:
         Returns:
             Formatted markdown string
         """
-        emoji = self.SEVERITY_EMOJI.get(finding.severity, "•")
+        emoji = SEVERITY_EMOJI.get(finding.severity, "•")
         severity_text = finding.severity.upper()
 
         lines = []

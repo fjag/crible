@@ -5,16 +5,11 @@ from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
 from rich.table import Table
 from crible.models import Finding
+from crible.constants import Severity, ReviewDecision, SEVERITY_STYLE
 
 
 class ReviewInterface:
     """Terminal-based interactive review interface using Rich library."""
-
-    SEVERITY_STYLE = {
-        "critical": "bold red",
-        "warning": "bold yellow",
-        "info": "bold blue",
-    }
 
     def __init__(self):
         self.console = Console()
@@ -50,12 +45,12 @@ class ReviewInterface:
         # Track review progress
         reviewed_count = 0
 
-        for severity in ["critical", "warning", "info"]:
+        for severity in Severity.ALL:
             severity_findings = grouped[severity]
             if not severity_findings:
                 continue
 
-            style = self.SEVERITY_STYLE[severity]
+            style = SEVERITY_STYLE[severity]
             self.console.print(f"\n[{style}]{'='*60}[/{style}]")
             self.console.print(f"[{style}]{severity.upper()} FINDINGS ({len(severity_findings)})[/{style}]")
             self.console.print(f"[{style}]{'='*60}[/{style}]\n")
@@ -67,14 +62,14 @@ class ReviewInterface:
 
                 if decision == "dismiss":
                     reason = self._prompt_reason()
-                    finding.review_decision = "dismissed"
+                    finding.review_decision = ReviewDecision.DISMISSED
                     finding.review_note = f"User review: {reason}"
                     self.console.print("[red]✓ Dismissed[/red]")
                     self.console.print("[dim]" + "─" * 60 + "[/dim]\n")
 
                 elif decision == "annotate":
                     note = self._prompt_annotation()
-                    finding.review_decision = "annotated"
+                    finding.review_decision = ReviewDecision.ANNOTATED
                     finding.review_note = f"User review: {note}"
                     self.console.print("[yellow]✓ Annotated[/yellow]")
                     self.console.print("[dim]" + "─" * 60 + "[/dim]\n")
@@ -84,12 +79,12 @@ class ReviewInterface:
                     self.console.print("\n[yellow]⏭ Accepting all remaining findings...[/yellow]\n")
                     for remaining_finding in severity_findings[i-1:]:
                         if remaining_finding.review_decision is None:
-                            remaining_finding.review_decision = "accepted"
+                            remaining_finding.review_decision = ReviewDecision.ACCEPTED
                     # Move to next severity level
                     break
 
                 else:  # accept
-                    finding.review_decision = "accepted"
+                    finding.review_decision = ReviewDecision.ACCEPTED
                     self.console.print("[green]✓ Accepted[/green]")
                     self.console.print("[dim]" + "─" * 60 + "[/dim]\n")
 
@@ -102,7 +97,7 @@ class ReviewInterface:
 
     def _group_by_severity(self, findings: List[Finding]) -> dict:
         """Group findings by severity."""
-        grouped = {"critical": [], "warning": [], "info": []}
+        grouped = {s: [] for s in Severity.ALL}
         for finding in findings:
             if finding.severity in grouped:
                 grouped[finding.severity].append(finding)
@@ -110,7 +105,7 @@ class ReviewInterface:
 
     def _display_finding(self, finding: Finding, index: int, total: int):
         """Display a single finding."""
-        style = self.SEVERITY_STYLE[finding.severity]
+        style = SEVERITY_STYLE[finding.severity]
 
         # Create table for structured display
         table = Table(show_header=False, box=None, padding=(0, 1))
@@ -162,9 +157,9 @@ class ReviewInterface:
         """Display review summary."""
         self.console.print("\n[bold]Review Summary[/bold]\n")
 
-        accepted = sum(1 for f in findings if f.review_decision == "accepted")
-        dismissed = sum(1 for f in findings if f.review_decision == "dismissed")
-        annotated = sum(1 for f in findings if f.review_decision == "annotated")
+        accepted = sum(1 for f in findings if f.review_decision == ReviewDecision.ACCEPTED)
+        dismissed = sum(1 for f in findings if f.review_decision == ReviewDecision.DISMISSED)
+        annotated = sum(1 for f in findings if f.review_decision == ReviewDecision.ANNOTATED)
 
         summary_table = Table()
         summary_table.add_column("Decision", style="bold")

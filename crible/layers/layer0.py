@@ -1,5 +1,4 @@
 """Layer 0: Dependency Extraction (Stub)."""
-import xml.etree.ElementTree as ET
 from typing import List, Dict, Tuple
 from crible.layers.base import Layer
 from crible.models import Finding
@@ -42,8 +41,7 @@ class Layer0(Layer):
             ParseError: If response cannot be parsed
         """
         try:
-            wrapped = f"<root>{response}</root>"
-            root = ET.fromstring(wrapped)
+            root = self.xml_parser.parse(response)
 
             findings = []
             dependencies = root.findall('.//dependency')
@@ -87,7 +85,7 @@ class Layer0(Layer):
 
             return findings, summary
 
-        except ET.ParseError as e:
-            raise ParseError(f"Failed to parse dependencies XML: {e}")
+        except ParseError:
+            raise  # Re-raise ParseError from xml_parser
         except Exception as e:
             raise ParseError(f"Unexpected error parsing dependencies: {e}")
